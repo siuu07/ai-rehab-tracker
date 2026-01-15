@@ -4,31 +4,41 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [pain, setPain] = useState(0);
-
+  const [pain, setPain] = useState("");
+  const [pains, setPains] = useState<number[]>([]);
   return (
     <>
       {/* <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
       </div> */}
       <h1>AI-assisted Rehab Tracker</h1>
       <p>Inspired by ACL recovery!</p>
       <div className="card">
         <label>Enter your pain:
-        <input type="text"
-        value = {pain} onChange={(e) => setPain(Number(e.target.value))} />
+          <input
+            type="number"
+            min="0"
+            max="10"
+            step="1"
+            value={pain}
+            onChange={(e) => setPain(e.target.value)}
+          />
         </label>
         <p>Today's pain: {pain}</p>
-        {/* next implement saving pain for each day in list */}
+        <button
+          onClick={() => {
+            if (pain === "") return;
+            setPains([...pains, Number(pain)]);
+            setPain("");
+          }}
+        >
+          Save Pain
+        </button>
+        <ul>
+          {pains.map((p, index) => (
+            <li key={index}>Pain: {p}</li>
+          ))}
+        </ul>
       </div>
-      {/* <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
     </>
   )
 }

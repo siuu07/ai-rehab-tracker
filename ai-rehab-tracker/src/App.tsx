@@ -5,7 +5,7 @@ import './App.css'
 
 function App() {
   const [pain, setPain] = useState("");
-  const [pains, setPains] = useState<number[]>([]);
+  const [pains, setPains] = useState<{ pain: number, date: string }[]>([]);
   return (
     <>
       {/* <div>
@@ -27,7 +27,11 @@ function App() {
         <button
           onClick={() => {
             if (pain === "") return;
-            setPains([...pains, Number(pain)]);
+            const entry = {
+              pain: Number(pain),
+              date: new Date().toLocaleDateString(),
+            };
+            setPains([...pains, entry]);
             setPain("");
           }}
         >
@@ -35,7 +39,7 @@ function App() {
         </button>
         <ul>
           {pains.map((p, index) => (
-            <li key={index}>Pain: {p}</li>
+            <li key={index}>{p.date} - Pain: {p.pain}</li>
           ))}
         </ul>
       </div>

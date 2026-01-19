@@ -6,6 +6,11 @@ import './App.css'
 function App() {
   const [pain, setPain] = useState("");
   const [pains, setPains] = useState<{ pain: number, date: string }[]>([]);
+  function getColor(pain: number) {
+    if (pain <= 3) return "green";
+    if (pain <= 6) return "orange";
+    return "red";
+  }
   return (
     <>
       {/* <div>
@@ -27,8 +32,13 @@ function App() {
         <button
           onClick={() => {
             if (pain === "") return;
+            const value = Number(pain);
+            if (value < 0 || value > 10) {
+              alert("Please enter a valid pain level (0-10).");
+              return;
+            }
             const entry = {
-              pain: Number(pain),
+              pain: value,
               date: new Date().toLocaleDateString(),
             };
             setPains([...pains, entry]);
@@ -37,11 +47,13 @@ function App() {
         >
           Save Pain
         </button>
-        <ul>
+
+        <div className="calendar">
+        {/* implement grid of pain colors */}
           {pains.map((p, index) => (
             <li key={index}>{p.date} - Pain: {p.pain}</li>
           ))}
-        </ul>
+        </div>
       </div>
     </>
   )

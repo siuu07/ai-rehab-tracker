@@ -6,6 +6,11 @@ import './App.css'
 function App() {
   const [pain, setPain] = useState("");
   const [pains, setPains] = useState<{ pain: number, date: string }[]>([]);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
   function getColor(pain: number) {
     if (pain <= 3) return "green";
     if (pain <= 6) return "orange";
@@ -47,14 +52,24 @@ function App() {
         >
           Save Pain
         </button>
-
-        <div className="calendar">
-        {/* implement grid of pain colors */}
-          {pains.map((p, index) => (
-            <li key={index}>{p.date} - Pain: {p.pain}</li>
-          ))}
-        </div>
       </div>
+      <div className="calendar">
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+          const entry = pains.find(p => new Date(p.date).getDate() === day);
+          const color = entry ? getColor(entry.pain) : "#eee";
+
+          return (
+            <div
+              className="day"
+              key={day}
+              style={{ backgroundColor: color }}
+            >
+              {day}
+            </div>
+          );
+        })}
+      </div>
+
     </>
   )
 }

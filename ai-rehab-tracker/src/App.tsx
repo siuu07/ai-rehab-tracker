@@ -44,7 +44,7 @@ function App() {
             }
             const entry = {
               pain: value,
-              date: new Date().toLocaleDateString(),
+              date: new Date().toISOString(),
             };
             setPains([...pains, entry]);
             setPain("");
@@ -57,7 +57,6 @@ function App() {
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
           const entry = pains.find(p => new Date(p.date).getDate() === day);
           const color = entry ? getColor(entry.pain) : "#eee";
-
           return (
             <div
               className="day"

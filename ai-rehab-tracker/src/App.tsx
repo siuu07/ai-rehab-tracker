@@ -55,19 +55,25 @@ function App() {
       </div>
       <div className="calendar">
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+          const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const entry = pains.find(p => new Date(p.date).getDate() === day);
           const color = entry ? getColor(entry.pain) : "#eee";
           return (
             <div
               className="day"
               key={day}
-              style={{ backgroundColor: color }}
+              style={{
+                backgroundColor: color,
+                border: isToday ? "3px solid #3b82f6" : "1px solid #ccc",
+                fontWeight: isToday ? "bold" : "normal",
+                transform: isToday ? "scale(1.05)" : "scale(1)",
+              }}
             >
-              {day}
-            </div>
-          );
-        })}
+        {day}
       </div>
+      );
+        })}
+    </div >
 
     </>
   )

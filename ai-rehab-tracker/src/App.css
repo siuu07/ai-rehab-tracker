@@ -51,5 +51,12 @@
   padding: 10px;
   text-align: center;
   border-radius: 6px;
+  cursor: pointer;
   color: black;   /* 👈 add this */
+}
+
+.day:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
 }

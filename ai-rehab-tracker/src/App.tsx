@@ -18,6 +18,9 @@ function App() {
     if (pain <= 6) return "orange";
     return "red";
   }
+  function getEntryForDay(day: number) {
+    return pains.find(p => new Date(p.date).getDate() === day && new Date(p.date).getMonth() === month && new Date(p.date).getFullYear() === year);
+  }
   // function daysFromSurgery(date: Date) {
   //   const diff = date.getTime() - surgeryDate.getTime();
   //   return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -56,11 +59,25 @@ function App() {
               alert("Please enter a valid pain level (0-10).");
               return;
             }
-            const entry = {
-              pain: value,
-              date: new Date().toISOString(),
-            };
-            setPains([...pains, entry]);
+            if (!selectedDay) {
+              alert("Please select a day");
+              return;
+            }
+            const dateForDay = new Date(year, month, selectedDay).toISOString();
+            const existing = getEntryForDay(selectedDay);
+            if (existing) {
+              // update
+              setPains(
+                pains.map(p =>
+                  new Date(p.date).getDate() === selectedDay
+                    ? { ...p, pain: value }
+                    : p
+                )
+              );
+            } else {
+              // insert
+              setPains([...pains, { pain: value, date: dateForDay }]);
+            }
             setPain("");
           }}
         >
@@ -69,16 +86,27 @@ function App() {
       </div>
       <div className="calendar">
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-          const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-          const entry = pains.find(p => new Date(p.date).getDate() === day);
+          const isToday =
+            day === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear();
+          const entry = getEntryForDay(day);
           const color = entry ? getColor(entry.pain) : "#eee";
           return (
-            <div className="day"
+            <div
+              className="day"
               key={day}
-              onClick={() => setSelectedDay(day)}
+              onClick={() => {
+                setSelectedDay(day);
+                const entry2 = getEntryForDay(day);
+                if (entry2) {
+                  setPain(String(entry2.pain));
+                } else {
+                  setPain("");
+                }
+              }}
               style={{
                 backgroundColor: color,
-                //border: isToday ? "3px solid #3b82f6" : "1px solid #ccc",
                 fontWeight: isToday ? "bold" : "normal",
                 transform: isToday ? "scale(1.05)" : "scale(1)",
                 border: selectedDay === day ? "3px solid black" : "1px solid #ccc",

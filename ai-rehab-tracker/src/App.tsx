@@ -2,20 +2,18 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface PainEntry {
   pain: number
   date: string
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PAIN_COLORS = {
   low: 'green',
   medium: 'orange',
   high: 'red',
 } as const
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24
 
 function getPainColor(pain: number): string {
   if (pain <= 3) return PAIN_COLORS.low
@@ -36,8 +34,22 @@ function loadPainsFromStorage(): PainEntry[] {
   return stored ? JSON.parse(stored) : []
 }
 
+function transformPainData(pains: PainEntry[]): { day: number; pain: number }[] {
+  return pains
+    .map(entry => {
+      const date = new Date(entry.date)
+      return { day: date.getDate(), pain: entry.pain }
+    })
+    .sort((a, b) => a.day - b.day)
+}
 
-// ─── Custom Hooks ─────────────────────────────────────────────────────────────
+function calcDaysPostOp(surgeryDate: string): number | null {
+  if (!surgeryDate) return null
+  const surgeryDateObj = new Date(surgeryDate)
+  const today = new Date()
+  const diffTime = today.getTime() - surgeryDateObj.getTime()
+  return Math.floor(diffTime / MS_PER_DAY)
+}
 
 function usePainLog() {
   const [pains, setPains] = useState<PainEntry[]>(loadPainsFromStorage)
@@ -53,14 +65,6 @@ function usePainLog() {
   function getEntryForDay(day: number): PainEntry | undefined {
     return pains.find(p => isSameDay(new Date(p.date), day, month, year))
   }
-
-function transformPainData(pains: PainEntry[]): { day: number; pain: number }[] {
-  return pains.map(entry => {
-      const date = new Date(entry.date)
-      return { day: date.getDate(), pain: entry.pain }
-    })
-    .sort((a, b) => a.day - b.day)
-}//step 1
 
   function saveEntry(day: number, painValue: number) {
     const date = new Date(year, month, day).toISOString()
@@ -80,11 +84,8 @@ function transformPainData(pains: PainEntry[]): { day: number; pain: number }[] 
   }
 
   const chartData = transformPainData(pains)
-  console.log(chartData)
   return { pains, today, year, month, getEntryForDay, saveEntry, chartData }
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface DayTileProps {
   day: number
@@ -100,7 +101,6 @@ function DayTile({ day, isToday, isSelected, entry, onClick }: DayTileProps) {
   return (
     <div
       className="day"
-      key={day}
       onClick={onClick}
       style={{
         backgroundColor,
@@ -184,27 +184,59 @@ function Calendar({ daysInMonth, today, month, year, selectedDay, getEntryForDay
     </div>
   )
 }
+
 interface ChartProps {
   data: { day: number; pain: number }[]
 }
 
 function Chart({ data }: ChartProps) {
+  if (data.length === 0) {
+    return (
+      <div className="card">
+        <h2>Pain Over Time</h2>
+        <p>No pain data yet. Select a day and log your pain to see trends!</p>
+      </div>
+    )
+  }
+
   return (
-        <div className="card">
+    <div className="card">
       <h2>Pain Over Time</h2>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <XAxis dataKey="day" label={{ value: 'Day', position: 'bottom' }} />
-          <YAxis label={{ value: 'Pain Level', angle: -90, position: 'insideLeft' }} />
+        <LineChart data={data} margin={{ top: 5, right: 20, bottom: 20, left: 0 }}>
+          <XAxis dataKey="day" label={{ value: 'Day', position: 'insideBottom', offset: -10 }} />
+          <YAxis 
+            domain={[0, 10]} 
+            label={{ value: 'Pain Level', angle: -90, position: 'insideLeft' }} 
+          />
           <Tooltip />
-          <Line type="monotone" dataKey="pain" stroke="#8884d8" />
+          <Line type="monotone" dataKey="pain" stroke="#8884d8" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
+interface SurgeryDateDisplayProps {
+  daysPostOp: number | null
+}
+
+function SurgeryDateDisplay({ daysPostOp }: SurgeryDateDisplayProps) {
+  if (daysPostOp === null) {
+    return (
+      <div className="card">
+        <p>Set your surgery date to track recovery progress</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card">
+      <h3>Recovery Progress</h3>
+      <p>Day {daysPostOp} post-op</p>
+    </div>
+  )
+}
 
 function App() {
   const [surgeryDate, setSurgeryDate] = useState('')
@@ -213,6 +245,7 @@ function App() {
 
   const { today, year, month, getEntryForDay, saveEntry, chartData } = usePainLog()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const daysPostOp = calcDaysPostOp(surgeryDate)
 
   function handleDayClick(day: number) {
     setSelectedDay(day)
@@ -241,7 +274,7 @@ function App() {
     <>
       <h1>AI-assisted Rehab Tracker</h1>
       <p>Inspired by ACL recovery!</p>
-
+      <SurgeryDateDisplay daysPostOp={daysPostOp} />
       <PainForm
         surgeryDate={surgeryDate}
         pain={pain}
@@ -249,7 +282,6 @@ function App() {
         onPainChange={setPain}
         onSave={handleSave}
       />
-
       <Calendar
         daysInMonth={daysInMonth}
         today={today}
@@ -259,7 +291,6 @@ function App() {
         getEntryForDay={getEntryForDay}
         onDayClick={handleDayClick}
       />
-
       <Chart data={chartData} />
     </>
   )

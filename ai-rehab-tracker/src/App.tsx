@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { supabase } from './supabaseClient'
 
 interface PainEntry {
   pain: number
@@ -246,6 +247,12 @@ function App() {
   const { today, year, month, getEntryForDay, saveEntry, chartData } = usePainLog()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const daysPostOp = calcDaysPostOp(surgeryDate)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      console.log('Supabase connected!', data)
+    })
+  }, [])
 
   function handleDayClick(day: number) {
     setSelectedDay(day)

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from './supabaseClient'
+import { AuthPage } from './components/auth/AuthPage'
+import type { User } from '@supabase/supabase-js'
 
 interface PainEntry {
   pain: number
@@ -206,9 +208,9 @@ function Chart({ data }: ChartProps) {
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 5, right: 20, bottom: 20, left: 0 }}>
           <XAxis dataKey="day" label={{ value: 'Day', position: 'insideBottom', offset: -10 }} />
-          <YAxis 
-            domain={[0, 10]} 
-            label={{ value: 'Pain Level', angle: -90, position: 'insideLeft' }} 
+          <YAxis
+            domain={[0, 10]}
+            label={{ value: 'Pain Level', angle: -90, position: 'insideLeft' }}
           />
           <Tooltip />
           <Line type="monotone" dataKey="pain" stroke="#8884d8" strokeWidth={2} />
@@ -240,6 +242,8 @@ function SurgeryDateDisplay({ daysPostOp }: SurgeryDateDisplayProps) {
 }
 
 function App() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const [surgeryDate, setSurgeryDate] = useState('')
   const [pain, setPain] = useState('')
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
@@ -250,8 +254,17 @@ function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      console.log('Supabase connected!', data)
+      setUser(data.session?.user ?? null)
+      setLoading(false)
     })
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [])
 
   function handleDayClick(day: number) {
@@ -262,7 +275,6 @@ function App() {
 
   function handleSave() {
     if (pain === '') return
-
     const value = Number(pain)
     if (value < 0 || value > 10) {
       alert('Please enter a valid pain level (0–10).')
@@ -272,10 +284,26 @@ function App() {
       alert('Please select a day.')
       return
     }
-
     saveEntry(selectedDay, value)
     setPain('')
   }
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
+    return <AuthPage onAuthSuccess={() => {
+      supabase.auth.getSession().then(({ data }) => {
+        setUser(data.session?.user ?? null)
+      })
+    }} />
+  }
+
+  async function handleLogout() {
+  await supabase.auth.signOut()
+  setUser(null)
+}
 
   return (
     <>

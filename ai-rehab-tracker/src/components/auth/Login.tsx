@@ -10,24 +10,40 @@ export function Login({ onSuccess, onSwitchToSignUp }: LoginProps) {
   // Same state as SignUp
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) {
-      console.error('Login failed:', error.message)
-    } else {
-      onSuccess()
-    }
+  e.preventDefault()
+  setError(null)  // ← ADD: Clear previous errors
+  
+  if (!email || !password) {  // ← ADD: Validation
+    setError('Please fill in all fields')
+    return
   }
+  
+  setLoading(true)
+  
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+  
+  if (error) {
+    setError(error.message)  // ← CHANGE: Set error to state, not console
+    setLoading(false)        // ← ADD: Stop loading
+  } else {
+    onSuccess()
+    setLoading(false)        // ← ADD: Stop loading
+  }
+}
   
   // Same JSX structure, just change text
   return (
+  <div className="card">
+    <h2>Login</h2>
+    {error && <p style={{ color: 'red' }}>{error}</p>}  {/* ← ADD THIS LINE */}
     <form onSubmit={handleLogin}>
-      <h2>Login</h2>
       <input
         type="email"
         placeholder="Email"
@@ -40,7 +56,9 @@ export function Login({ onSuccess, onSwitchToSignUp }: LoginProps) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button type="submit">Login</button>
+      <button type="submit" disabled={loading}>
+        {loading ? 'Loading...' : 'Login'}
+      </button>
       <p>
         Don't have an account?{' '}
         <button type="button" onClick={onSwitchToSignUp}>
@@ -48,5 +66,6 @@ export function Login({ onSuccess, onSwitchToSignUp }: LoginProps) {
         </button>
       </p>
     </form>
-  )
+  </div>
+)
 }

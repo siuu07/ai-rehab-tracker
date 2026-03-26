@@ -301,14 +301,22 @@ function App() {
   }
 
   async function handleLogout() {
-  await supabase.auth.signOut()
-  setUser(null)
-}
+    await supabase.auth.signOut()
+    setUser(null)
+  }
 
   return (
     <>
-      <h1>AI-assisted Rehab Tracker</h1>
-      <p>Inspired by ACL recovery!</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>AI-assisted Rehab Tracker</h1>
+          <p>Inspired by ACL recovery!</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ margin: 0, fontSize: '14px' }}>{user.email}</p>
+          <button onClick={handleLogout}>Log Out</button>
+        </div>
+      </div>
       <SurgeryDateDisplay daysPostOp={daysPostOp} />
       <PainForm
         surgeryDate={surgeryDate}

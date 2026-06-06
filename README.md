@@ -24,3 +24,23 @@ An AI-assisted rehab tracker that:
 - Node.js / Express
 - AI (OpenAI or rule-based model)
 - Charting (Recharts)
+
+# AI-Assisted Rehabilitation Tracker
+
+Live demo: [your Vercel URL if deployed]
+
+A full-stack health monitoring app to track athlete and patient recovery 
+through daily pain logging and data visualisation.
+
+## What it does
+
+- Daily pain logging with notes and severity tracking
+- Interactive calendar heatmap showing recovery patterns over time
+- Pain trend charts built with Recharts for data-driven insights
+- Secure user authentication and data storage with Supabase
+- AI-assisted insights module in progress — analyses trends and 
+  generates personalised recovery feedback
+
+## Tech stack
+
+React, TypeScript, Supabase, PostgreSQL, OpenAI API, Vercel

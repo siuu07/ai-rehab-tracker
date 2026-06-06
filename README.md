@@ -27,7 +27,7 @@ An AI-assisted rehab tracker that:
 
 # AI-Assisted Rehabilitation Tracker
 
-Live demo: [your Vercel URL if deployed]
+Live demo: []
 
 A full-stack health monitoring app to track athlete and patient recovery 
 through daily pain logging and data visualisation.
